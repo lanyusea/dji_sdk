@@ -36,7 +36,6 @@ loop()
     ...
 }
 -->[SDK] code to Release control
-
 */
 
 /* ROS */
@@ -47,12 +46,13 @@ loop()
 #include <dji_onboard_sdk/gimbal_ctrl_data.h>
 
 /* SDK */
-#include "sdk_lib/DJI_Pro_Codec.h"
-#include "sdk_lib/DJI_Pro_Hw.h"
-#include "sdk_lib/DJI_Pro_Link.h"
-#include "sdk_lib/DJI_Pro_App.h"
-#include "sdk_lib/DJI_Pro_Rmu.h"
-#include "sdk_lib/dji_sdk_auxiliary.h"
+#include "dji_sdk_lib/DJI_Pro_Codec.h"
+#include "dji_sdk_lib/DJI_Pro_Hw.h"
+#include "dji_sdk_lib/DJI_Pro_Link.h"
+#include "dji_sdk_lib/DJI_Pro_App.h"
+#include "dji_sdk_lib/DJI_Pro_Rmu.h"
+
+#include "dji_info_lib/dji_sdk_app_info.h"
 
 /* MATH for_example */
 #include <math.h>
@@ -71,7 +71,7 @@ using namespace ros;
 using namespace std;
 
 //This class is the suggested procedure
-class dji_onboard
+class dji_uav_onboard
 {
 public:
 
@@ -87,24 +87,26 @@ public:
     int setupFcLink();
 
     int activationFc();
-
     int AUTO_activation();
 
     int controlObtain();
-
     int controlRelease();
+
+    int takeOffCtrl();
+    int langCtrl();
+    int goHomeCtrl();
 
 private:
     /* activation param */
 };
 
-int dji_onboard::loadUserInfo(std::string info)
+int dji_uav_onboard::loadUserInfo(std::string info)
 {
     user_info->loadAppInfo(info);
     return 1;
 }
 
-int dji_onboard::openSerialPort()
+int dji_uav_onboard::openSerialPort()
 {
     char uart_name[32];
     strcpy(uart_name, (char *)user_info->serial_port.serial_name.c_str());
@@ -121,15 +123,18 @@ int dji_onboard::openSerialPort()
         return 1;
 }
 
-int dji_onboard::setupFcLink()
+int dji_uav_onboard::setupFcLink()
 {
     //Setup flight ctrl link
     DJI_Pro_Setup(NULL);
 
+    //Pro_Link_Setup();
+    //Pro_App_Recv_Set_Hook(DJI_Pro_App_Recv_Req_Data);
+
     return 0;
 }
 
-int dji_onboard::activationFc()
+int dji_uav_onboard::activationFc()
 {
     char temp_buf[65];
 
@@ -145,7 +150,7 @@ int dji_onboard::activationFc()
     return 1;
 }
 
-int dji_onboard::AUTO_activation()
+int dji_uav_onboard::AUTO_activation()
 {
     cout<<"CALL AUTO_activation "<<activiton_times<<" times."<<endl;
     for(int i = 1; i<= activiton_times; i++)
@@ -158,7 +163,7 @@ int dji_onboard::AUTO_activation()
     return 1;
 }
 
-int dji_onboard::controlObtain()
+int dji_uav_onboard::controlObtain()
 {
     cout<<BLUE<<"Obtain control."<<RESETCOLOR<<endl;
 
@@ -167,7 +172,7 @@ int dji_onboard::controlObtain()
     return 1;
 }
 
-int dji_onboard::controlRelease()
+int dji_uav_onboard::controlRelease()
 {
     cout<<BLUE<<"Release control."<<RESETCOLOR<<endl;
 
@@ -176,6 +181,23 @@ int dji_onboard::controlRelease()
     return 1;
 }
 
+int dji_uav_onboard::takeOffCtrl()
+{
+    DJI_Pro_Status_Ctrl(4,0);
+    printf("[STATUS_CMD] send [TAKE OFF]\n");
+}
+
+int dji_uav_onboard::langCtrl()
+{
+    DJI_Pro_Status_Ctrl(6,0);
+    printf("[STATUS_CMD] send [LAND]\n");
+}
+
+int dji_uav_onboard::goHomeCtrl()
+{
+    DJI_Pro_Status_Ctrl(1,0);
+    printf("[STATUS_CMD] send [GO HOME]\n");
+}
 
 /* ros sub from serial */
 ros::Subscriber obtain_ctrl_sub;
@@ -193,7 +215,7 @@ ros::Publisher sensor_pub;
 ros::Timer simple_task_timer;
 std::string user_sdk_info;
 
-dji_onboard my_n1;
+dji_uav_onboard my_n1;
 
 //-------------define type------------------
 
@@ -212,25 +234,21 @@ void flight_status_request_callback(const std_msgs::Float32::ConstPtr& msg)
 {
     float status_request_cmd;
     status_request_cmd = msg->data;
-    uint8_t send_data = 0;
 
     if(status_request_cmd == API_GO_HOME)
     {
-        send_data = 1;
+        my_n1.goHomeCtrl();
     }
     else
         if(status_request_cmd == API_TAKE_OFF)
         {
-            send_data = 4;
+            my_n1.takeOffCtrl();
         }
         else
             if(status_request_cmd == API_LANDING)
             {
-                send_data = 6;
+                my_n1.langCtrl();
             }
-
-    DJI_Pro_Status_Ctrl(send_data,0);
-    printf("[STATUS_CMD] send %d \n",send_data);
 }
 
 void ros_obtain_ctrl_callback(const std_msgs::Float32::ConstPtr& msg)

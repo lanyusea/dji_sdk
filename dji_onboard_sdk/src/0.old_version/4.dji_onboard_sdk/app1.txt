@@ -1,0 +1,12 @@
+# DJI onboard SDK APP Info 
+
+# Serial Port Info 
+serial_name = /dev/ttyUSB0
+baud_rate = 115200
+
+# Onboard APP Info 
+app_id = 1005832
+app_api_level = 2
+app_version = 1
+app_bundle_id = 12345678901234567890123456789012
+app_enc_key = 6c3e0b6b1725dfcf7db2372cda2bbcfe89a78117d7ca10f1c7e2b7598e78b331

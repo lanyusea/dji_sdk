@@ -88,7 +88,8 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 
-file(GLOB DJI_SDK_LIB_SOURCES src/sdk_lib/*.cpp) 
+file(GLOB DJI_SDK_LIB_SOURCES src/dji_sdk_lib/*.cpp) 
+file(GLOB DJI_SDK_INFO_LIB_SOURCES src/dji_info_lib/*.cpp) 
 
 ##SET_SOURCE_FILES_PROPERTIES(${DJI_SDK_LIB_SOURCES} PROPERTIES LANGUAGE CXX)
 
@@ -106,7 +107,7 @@ include_directories(
 # ) 
 
 ## Declare a cpp executable
-add_executable(serial_to_N1 src/serial_to_N1.cpp ${DJI_SDK_LIB_SOURCES})
+add_executable(serial_to_N1 src/serial_to_N1.cpp ${DJI_SDK_LIB_SOURCES} ${DJI_SDK_INFO_LIB_SOURCES})
 target_link_libraries(serial_to_N1   ${catkin_LIBRARIES} )
 
 
