@@ -1,3 +1,23 @@
+Forked from Prof.Gao.
+
+an archive of SDK library 2.2.7
+
+dji_sdk/tree/master/dji_onboard_sdk/src/old_version/3.dji_sdk
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # dji_sdk
 
 ##dji_onboard_sdk:
